@@ -4,14 +4,14 @@
 if ! command -v unzip >/dev/null 2>&1; then
     echo "Installing unzip..."
     if [ -x "$(command -v apt)" ]; then
-        apt-get update
-        apt-get install -y unzip
+         apt-get update
+         apt-get install -y unzip
     elif [ -x "$(command -v yum)" ]; then
-        yum install -y unzip
+         yum install -y unzip
     elif [ -x "$(command -v zypper)" ]; then
-        zypper install -y unzip
+         zypper install -y unzip
     elif [ -x "$(command -v pacman)" ]; then
-        pacman -Syu --noconfirm unzip
+         pacman -Syu --noconfirm unzip
     else
         echo "Unzip installation failed. Please install unzip manually."
         exit 1
@@ -21,27 +21,35 @@ fi
 if ! command -v curl >/dev/null 2>&1; then
     echo "Installing curl..."
     if [ -x "$(command -v apt)" ]; then
-        apt-get update
-        apt-get install -y curl
+         apt-get update
+         apt-get install -y curl
     elif [ -x "$(command -v yum)" ]; then
-        yum install -y curl
+         yum install -y curl
     elif [ -x "$(command -v zypper)" ]; then
-        zypper install -y curl
+         zypper install -y curl
     elif [ -x "$(command -v pacman)" ]; then
-        pacman -Syu --noconfirm curl
+         pacman -Syu --noconfirm curl
     else
         echo "Curl installation failed. Please install curl manually."
         exit 1
     fi
 fi
 
-# Get installation directory from user input
-read -p "Enter installation directory (default: /var/planet9): " INSTALL_DIR
-INSTALL_DIR=${INSTALL_DIR:-/var/planet9}
+# Get installation directory from user input or command-line argument
+if [ "$1" = "-silent" ]; then
+    INSTALL_DIR="/opt/neptune-open-edition"
+else
+    read -p "Enter installation directory (default: /opt/neptune-open-edition): " INSTALL_DIR
+    INSTALL_DIR=${INSTALL_DIR:-/opt/neptune-open-edition}
+fi
 
-# Get service name from user input
-read -p "Enter service name (default: planet9): " SERVICE_NAME
-SERVICE_NAME=${SERVICE_NAME:-planet9}
+# Get service name from user input or command-line argument
+if [ "$1" = "-silent" ]; then
+    SERVICE_NAME="neptune-open-edition"
+else
+    read -p "Enter service name (default: neptune-open-edition): " SERVICE_NAME
+    SERVICE_NAME=${SERVICE_NAME:-neptune-open-edition}
+fi
 
 # Set the default service user
 SERVICE_USER="planet9"
@@ -49,42 +57,24 @@ SERVICE_USER="planet9"
 # Define the download URL for Neptune DXP – Open Edition
 DOWNLOAD_URL="https://stneptuneportal.blob.core.windows.net/downloads/Neptune%20DX%20Platform%20-%20Open%20Edition/Long-term%20Maintenance%20Releases/DXP%2022/22.10.7%20(Patch%207)/planet9-linux-v22.10.7.zip"
 
-# Ask the user whether to install or upgrade
-echo "Choose an action:"
-echo "1. Install (Default)"
-echo "2. Upgrade"
-read -p "Enter your choice (1/2): " CHOICE
+# Create the installation directory if it doesn't exist
+mkdir -p "$INSTALL_DIR"
 
-# Set default to 1 (Install) if input is empty
-CHOICE=${CHOICE:-1}
+# Download the Neptune DXP – Open Edition ZIP file
+echo "Downloading Neptune DXP – Open Edition..."
+curl -o "$INSTALL_DIR/neptune-open-edition.zip" "$DOWNLOAD_URL"
 
-# Perform the selected action
-case $CHOICE in
-    1)
-        # Create the installation directory if it doesn't exist
-        mkdir -p "$INSTALL_DIR"
+# Unzip the downloaded file
+unzip "$INSTALL_DIR/neptune-open-edition.zip" -d "$INSTALL_DIR"
 
-        # Download the Neptune DXP – Open Edition ZIP file
-        echo "Downloading Neptune DXP – Open Edition..."
-        curl -o "$INSTALL_DIR/neptune-open-edition.zip" "$DOWNLOAD_URL"
+# Make the server file executable
+chmod +x "$INSTALL_DIR/planet9-linux"  # Adjust based on the actual server file name
 
-        # Unzip the downloaded file
-        unzip "$INSTALL_DIR/neptune-open-edition.zip" -d "$INSTALL_DIR"
+# Start the installation or upgrade
+echo "Starting Neptune DXP – Open Edition installation or upgrade..."
+"$INSTALL_DIR/planet9-linux" --upgrade  # Use --upgrade for upgrades, remove for fresh installation
 
-        # Make the server file executable
-        chmod +x "$INSTALL_DIR/planet9-linux"  # Adjust based on the actual server file name
-        ;;
-    2)
-        # Start the upgrade
-        echo "Starting Neptune DXP – Open Edition upgrade..."
-		cd "$INSTALL_DIR"
-        "$INSTALL_DIR/planet9-linux" --upgrade
-        echo "Neptune DXP – Open Edition upgrade completed."
-        ;;
-    *)
-        echo "Invalid choice. No action performed."
-        ;;
-esac
+echo "Neptune DXP – Open Edition installation or upgrade completed."
 
 # Create the service user (requires superuser privileges)
 if ! id "$SERVICE_USER" &>/dev/null; then
@@ -128,10 +118,10 @@ EOF
         systemctl daemon-reload
         systemctl enable "$SERVICE_NAME"
         systemctl start "$SERVICE_NAME"
-        echo "Service installation completed. Neptune DXP – Open Edition is now running as a service give the service 2 minutes to start."
+        echo "Service installation completed. Neptune DXP – Open Edition is now running as a service."
     elif [ -x "$(command -v rc-service)" ]; then
         rc-service "$SERVICE_NAME" start
         rc-update add "$SERVICE_NAME" default
-        echo "Service installation completed. Neptune DXP – Open Edition is now running as a service give the service 2 minutes to start."
+        echo "Service installation completed. Neptune DXP – Open Edition is now running as a service."
     fi
 fi
