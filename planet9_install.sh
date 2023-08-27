@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Check if unzip and curl are installed, and install them if needed
 if ! command -v unzip >/dev/null 2>&1; then
