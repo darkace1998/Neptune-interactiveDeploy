@@ -55,7 +55,7 @@ fi
 SERVICE_USER="planet9"
 
 # Define the download URL for Neptune DXP – Open Edition
-DOWNLOAD_URL="https://stneptuneportal.blob.core.windows.net/downloads/Neptune%20DX%20Platform%20-%20Open%20Edition%2FLong-term%20Maintenance%20Releases%2FDXP%2023%2F23.10.2%20(Patch%202)%2Fplanet9-linux-v23.10.2.zip"
+DOWNLOAD_URL="https://stneptuneportal.blob.core.windows.net/downloads/Neptune%20DX%20Platform%20-%20Open%20Edition%2FLong-term%20Maintenance%20Releases%2FDXP%2023%2F23.10.5%20(Patch%205)%2Fplanet9-linux-v23.10.5.zip"
 
 # Create the installation directory if it doesn't exist
 mkdir -p "$INSTALL_DIR"
