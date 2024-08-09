@@ -4,8 +4,7 @@
 if ! command -v unzip >/dev/null 2>&1; then
     echo "Installing unzip..."
     if [ -x "$(command -v apt)" ]; then
-         apt-get update
-         apt-get install -y unzip
+         apt install -y unzip
     elif [ -x "$(command -v yum)" ]; then
          yum install -y unzip
     elif [ -x "$(command -v zypper)" ]; then
